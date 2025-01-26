@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Decoding Strategies in Language Models</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Decoding Strategies in Language Models</h1>
+
+    <h2>1. Argmax (Greedy) Decoding</h2>
+    <p><strong>Mechanism</strong>:</p>
+    <p>At each step \( t \), select the token \( i \) with the highest probability:</p>
+    <div class="math-block">
+        \[
+        i = \arg\max_i P(Y_t = i \mid Y_{1:t-1})
+        \]
+    </div>
+    <p><strong>Key Insights</strong>:</p>
+    <ul>
+        <li><strong>Deterministic</strong> but lacks diversity.</li>
+        <li>Suitable for <strong>factual tasks</strong> (e.g., translation, short answers).</li>
+        <li><strong>Limitation</strong>: Repetitive outputs; fails in creative contexts.</li>
+    </ul>
+
+    <h2>2. Random Sampling</h2>
+    <p><strong>Mechanism</strong>: Sample the next token \( i \) from the full distribution:</p>
+    <div class="math-block">
+        \[
+        i \sim P(Y_t \mid Y_{1:t-1})
+        \]
+    </div>
+    <p><strong>Key Insights</strong>:</p>
+    <ul>
+        <li>Introduces <strong>diversity</strong> but risks low-quality outputs.</li>
+        <li>Rarely used raw; often combined with <strong>temperature</strong> or <strong>top-k</strong>.</li>
+    </ul>
+
+    <h2>3. Temperature Sampling</h2>
+    <p><strong>Mechanism</strong>: Scale logits \( \epsilon_i \) by temperature \( T \):</p>
+    <div class="math-block">
+        \[
+        P(Y_t = i) = \frac{\exp(\epsilon_i / T)}{\sum_j \exp(\epsilon_j / T)}
+        \]
+    </div>
+    <p><strong>Key Insights</strong>:</p>
+    <ul>
+        <li><strong>Low \( T < 1 \)</strong>: Sharpens distribution (less random).</li>
+        <li><strong>High \( T > 1 \)</strong>: Flattens distribution (more random).</li>
+        <li>Typical \( T \in [0.5, 0.7] \).</li>
+    </ul>
+
+    <h2>4. Top-\( k \) Sampling</h2>
+    <p><strong>Mechanism</strong>: Retain top \( k \) tokens by probability, renormalize:</p>
+    <div class="math-block">
+        \[
+        P'(Y_t = i) = \begin{cases} 
+        \frac{P(Y_t = i)}{\sum_{j \in \text{top-}k} P(Y_t = j)} & \text{if } i \in \text{top-}k \\
+        0 & \text{otherwise}
+        \end{cases}
+        \]
+    </div>
+    <p><strong>Key Insights</strong>:</p>
+    <ul>
+        <li>Balances quality and diversity.</li>
+        <li><strong>Limitation</strong>: Fixed \( k \) may over-restrict in high-entropy contexts.</li>
+        <li>Typical \( k \in [10, 50] \).</li>
+    </ul>
+
+    <h2>5. Nucleus (Top-\( p \)) Sampling</h2>
+    <p><strong>Mechanism</strong>: Retain the smallest set of tokens with cumulative probability \( \geq p \):</p>
+    <div class="math-block">
+        \[
+        P'(Y_t = i) = \begin{cases} 
+        \frac{P(Y_t = i)}{\sum_{j \in S} P(Y_t = j)} & \text{if } i \in S \text{, where } S = \text{smallest set s.t. } \sum_{j \in S} P(Y_t = j) \geq p \\
+        0 & \text{otherwise}
+        \end{cases}
+        \]
+    </div>
+    <p><strong>Key Insights</strong>:</p>
+    <ul>
+        <li><strong>Adaptive</strong>: Adjusts \( k_t \) dynamically per context.</li>
+        <li>Preferred over top-\( k \) for open-ended tasks (e.g., storytelling).</li>
+    </ul>
+
+    <h2>6. Beam Search</h2>
+    <p><strong>Mechanism</strong>: Maintain \( b \) candidate sequences, selecting those with highest cumulative likelihood:</p>
+    <div class="math-block">
+        \[
+        \hat{Y}_{1:T} = \arg\max_{Y_{1:T}} \prod_{t=1}^T P(Y_t \mid Y_{1:t-1})
+        \]
+    </div>
+    <p><strong>Key Insights</strong>:</p>
+    <ul>
+        <li><strong>Structured tasks</strong>: Effective for translation, code generation.</li>
+        <li><strong>Limitation</strong>: Overly predictable outputs; unsuitable for creative tasks.</li>
+    </ul>
+
+    <h2>Additional Parameters</h2>
+    <h3>1. Frequency Penalty</h3>
+    <p>Reduce probability of tokens repeated in the output:</p>
+    <div class="math-block">
+        \[
+        \epsilon_i' = \epsilon_i - \lambda_{\text{freq}} \cdot c_i
+        \]
+    </div>
+    <p>where \( c_i \) = count of token \( i \) in the generated text.</p>
+
+    <h3>2. Presence Penalty</h3>
+    <p>Reduce probability of tokens that have appeared at least once:</p>
+    <div class="math-block">
+        \[
+        \epsilon_i' = \epsilon_i - \lambda_{\text{pres}} \cdot \mathbb{I}(c_i > 0)
+        \]
+    </div>
+
+    <h3>3. Stopping Criteria</h3>
+    <ul>
+        <li><strong>Token count</strong>: Stop after \( N \) tokens.</li>
+        <li><strong>End-of-sequence token</strong>: Stop when generating special tokens (e.g., <code>&lt;EOS&gt;</code>).</li>
+    </ul>
+
+    <h2>Key Takeaways</h2>
+    <table>
+        <tr>
+            <th>Strategy</th>
+            <th>Use Case</th>
+            <th>Strengths</th>
+            <th>Weaknesses</th>
+        </tr>
+        <tr>
+            <td>Argmax</td>
+            <td>Factual, short answers</td>
+            <td>Deterministic, precise</td>
+            <td>Repetitive, lacks creativity</td>
+        </tr>
+        <tr>
+            <td>Random + Temperature</td>
+            <td>Creative tasks</td>
+            <td>Tunable diversity</td>
+            <td>Risk of incoherence</td>
+        </tr>
+        <tr>
+            <td>Top-\( k \)/Top-\( p \)</td>
+            <td>General-purpose</td>
+            <td>Balanced quality/diversity</td>
+            <td>Fixed \( k \)/\( p \) may fail</td>
+        </tr>
+        <tr>
+            <td>Beam Search</td>
+            <td>Structured tasks (e.g., translation)</td>
+            <td>High likelihood outputs</td>
+            <td>Overly rigid, lacks variability</td>
+        </tr>
+    </table>
+
+    <h3>Practical Guidelines</h3>
+    <ul>
+        <li>Use <strong>nucleus sampling</strong> (\( p \in [0.7, 0.9] \)) for open-ended generation.</li>
+        <li>Apply <strong>frequency/presence penalties</strong> (\( \lambda \in [0.1, 0.5] \)) to reduce repetition.</li>
+        <li><strong>Temperature</strong> \( T = 0.7 \) often balances creativity and coherence.</li>
+    </ul>
+
+    <h3>Mathematical Conventions</h3>
+    <ul>
+        <li>\( Y_t \): Token at position \( t \).</li>
+        <li>\( \epsilon_i \): Logit for token \( i \).</li>
+        <li>\( \mathbb{I}(\cdot) \): Indicator function.</li>
+        <li>Bold symbols (e.g., \( \mathbf{Y} \)) denote sequences.</li>
+    </ul>
+</body>
+</html>
