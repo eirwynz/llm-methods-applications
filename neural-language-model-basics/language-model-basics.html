@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Language Model Basics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body>
+    <h1>Language Model Basics</h1>
+    
+    <p>Language models are statistical tools that predict the probability distribution of the next token in a sequence given the preceding tokens. They are widely used in natural language processing (NLP) for tasks such as text generation, translation, and speech recognition.</p>
+    
+    <h2>Key Insights</h2>
+    
+    <h3>1. Language Model Definition</h3>
+    <p>A language model defines the probability distribution over sequences of words. For a sequence of tokens \( Y = [y_1, y_2, ..., y_T] \), the joint probability is computed using the chain rule:</p>
+    <div class="math-block">
+        \[
+        P(Y) = P(y_1 | \text{start}) \times P(y_2 | y_1) \times ... \times P(y_T | y_{T-1})
+        \]
+    </div>
+
+    <h3>2. Statistical N-Gram Models</h3>
+    <p>These models estimate probabilities based on the frequency of n-grams (sequences of n tokens) in a training corpus. However, they suffer from two main limitations:</p>
+    <ul>
+        <li><strong>Parameter Explosion</strong>: The number of model parameters grows exponentially with n.</li>
+        <li><strong>Data Sparsity</strong>: Rare or unseen n-grams receive zero probability, leading to unrealistic predictions.</li>
+    </ul>
+
+    <h3>3. Neural Language Models</h3>
+    <p>Neural networks replace the rigid n-gram frequency tables with flexible neural architectures that can generalize from limited data. They:</p>
+    <ul>
+        <li>Reduce parameter growth exponentially through shared weights and context representation.</li>
+        <li>Leverage continuous vector representations (word embeddings) to capture semantic meaning, avoiding data sparsity issues.</li>
+    </ul>
+
+    <h3>4. Encoder-Decoder Architecture</h3>
+    <p>This architecture is particularly effective for tasks requiring contextual understanding across multiple sequences. It consists of:</p>
+    <ul>
+        <li><strong>Encoder</strong>: Processing the input sequence \( X = [x_1, x_2, ..., x_T] \) into a continuous vector representation.</li>
+        <li><strong>Decoder</strong>: Using this representation to predict each token in the target sequence \( Y = [y_1, y_2, ..., y_T] \). The model outputs conditional probabilities:</li>
+    </ul>
+    <div class="math-block">
+        \[
+        P(Y | X; \theta) = \prod_{t=1}^T P(y_t | y_{1:t-1}, x; \theta)
+        \]
+    </div>
+    <p>where \( \theta \) represents the learned parameters.</p>
+
+    <h3>5. Mathematical Formulation</h3>
+    <p>The probability of a sequence is computed using Bayes' rule and continuous vector representations:</p>
+    <div class="math-block">
+        \[
+        P(Y | X; \theta) = \prod_{t=1}^T P(y_t | h_t, h_{t-1}; \theta)
+        \]
+    </div>
+    <p>where \( h_t \) represents the hidden states computed by the encoder-decoder network.</p>
+
+    <h3>6. Applications</h3>
+    <p>Neural language models have revolutionized NLP tasks by enabling flexible and data-driven predictions, overcoming limitations of traditional n-gram models.</p>
+</body>
+</html>
