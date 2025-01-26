@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Language Model Architectures</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body>
+    <h1>Language Model Architectures</h1>
+    <h2>Notes for Self-Attention, Multi-Head Attention, and Positional Encoding</h2>
+
+    <h3>Definitions</h3>
+    <ul>
+        <li>Sequence Length: \( n \) (number of tokens)</li>
+        <li>Embedding Dimension: \( d_{\text{model}} \) (e.g., 512)</li>
+        <li>Number of Heads: \( H \) (e.g., 8)</li>
+        <li>Key/Query Dimension: \( d_k = d_{\text{model}} / H \)</li>
+        <li>Value Dimension: \( d_v = d_{\text{model}} / H \)</li>
+    </ul>
+
+    <h3>1. Self-Attention Mechanism</h3>
+    <h4>Step 1: Input Matrices</h4>
+    <ul>
+        <li>Queries: \( \mathbf{Q} \in \mathbb{R}^{n \times d_k} \)</li>
+        <li>Keys: \( \mathbf{K} \in \mathbb{R}^{n \times d_k} \)</li>
+        <li>Values: \( \mathbf{V} \in \mathbb{R}^{n \times d_v} \)</li>
+    </ul>
+
+    <h4>Step 2: Scaled Dot-Product Scores</h4>
+    <div class="math-block">
+        \[
+        \mathbf{S} = \mathbf{Q} \mathbf{K}^\top \quad \text{where } s_{ij} = \frac{\mathbf{q}_i \cdot \mathbf{k}_j}{\sqrt{d_k}}
+        \]
+    </div>
+
+    <h4>Step 3: Softmax Normalization</h4>
+    <div class="math-block">
+        \[
+        \alpha_{ij} = \frac{\exp(s_{ij})}{\sum_{m=1}^n \exp(s_{im})}, \quad \mathbf{A} = [\alpha_{ij}] \in \mathbb{R}^{n \times n}
+        \]
+    </div>
+
+    <h4>Step 4: Contextualized Output</h4>
+    <div class="math-block">
+        \[
+        \mathbf{C} = \mathbf{A} \mathbf{V} \quad \text{where } \mathbf{c}_i = \sum_{j=1}^n \alpha_{ij} \mathbf{v}_j
+        \]
+    </div>
+
+    <h3>2. Multi-Head Attention</h3>
+    <h4>Step 1: Project Inputs per Head</h4>
+    <p>For each head \( h \in \{1, \dots, H\} \):</p>
+    <ul>
+        <li>Query Projection: \( \mathbf{Q}_h = \mathbf{Q} \mathbf{W}_h^Q \), \( \mathbf{W}_h^Q \in \mathbb{R}^{d_{\text{model}} \times d_k} \)</li>
+        <li>Key Projection: \( \mathbf{K}_h = \mathbf{K} \mathbf{W}_h^K \), \( \mathbf{W}_h^K \in \mathbb{R}^{d_{\text{model}} \times d_k} \)</li>
+        <li>Value Projection: \( \mathbf{V}_h = \mathbf{V} \mathbf{W}_h^V \), \( \mathbf{W}_h^V \in \mathbb{R}^{d_{\text{model}} \times d_v} \)</li>
+    </ul>
+
+    <h4>Step 2: Compute Head-Specific Attention</h4>
+    <div class="math-block">
+        \[
+        \mathbf{C}_h = \text{softmax}\left(\frac{\mathbf{Q}_h \mathbf{K}_h^\top}{\sqrt{d_k}}\right) \mathbf{V}_h \quad \in \mathbb{R}^{n \times d_v}
+        \]
+    </div>
+
+    <h4>Step 3: Concatenate and Project</h4>
+    <ul>
+        <li>Concatenate: \( \mathbf{M} = [\mathbf{C}_1 | \mathbf{C}_2 | \dots | \mathbf{C}_H] \in \mathbb{R}^{n \times H d_v} \)</li>
+        <li>Output Projection: \( \mathbf{O} = \mathbf{M} \mathbf{W}^O \), \( \mathbf{W}^O \in \mathbb{R}^{H d_v \times d_{\text{model}}} \)</li>
+    </ul>
+
+    <h3>3. Positional Encoding</h3>
+    <h4>Sinusoidal Encoding</h4>
+    <p>For position \( pos \) and dimension \( i \):</p>
+    <div class="math-block">
+        \[
+        \text{PE}(pos, i) = 
+        \begin{cases} 
+        \sin\left(\frac{pos}{10000^{2j/d_{\text{model}}}}\right) & \text{if } i = 2j \\
+        \cos\left(\frac{pos}{10000^{2j/d_{\text{model}}}}\right) & \text{if } i = 2j + 1 
+        \end{cases}
+        \]
+    </div>
+
+    <h3>Example with Numbers</h3>
+    <ul>
+        <li>Input: \( n = 5 \), \( d_{\text{model}} = 512 \), \( H = 8 \)</li>
+        <li>Dimensions: \( d_k = d_v = 512 / 8 = 64 \)</li>
+        <li>Multi-Head Output: \( \mathbf{O} \in \mathbb{R}^{5 \times 512} \)</li>
+    </ul>
+</body>
+</html>
